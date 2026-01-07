@@ -1,0 +1,38 @@
+{
+  coord: { lon: -97.7431, lat: 30.2672 },
+  weather: [
+    {
+      id: 802,
+      main: 'Clouds',
+      description: 'scattered clouds',
+      icon: '03d'
+    }
+  ],
+  base: 'stations',
+  main: {
+    temp: 66.96,
+    feels_like: 66.27,
+    temp_min: 65.25,
+    temp_max: 72.03,
+    pressure: 1015,
+    humidity: 62,
+    sea_level: 1015,
+    grnd_level: 991
+  },
+  visibility: 10000,
+  wind: { speed: 1.01, deg: 266 },
+  clouds: { all: 44 },
+  dt: 1767801063,
+  sys: {
+    type: 2,
+    id: 2073627,
+    country: 'US',
+    sunrise: 1767792499,
+    sunset: 1767829550
+  },
+  timezone: -21600,
+  id: 4671654,
+  name: 'Austin',
+  cod: 200
+}
+
