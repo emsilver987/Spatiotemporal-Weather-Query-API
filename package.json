@@ -1,0 +1,26 @@
+{
+  "name": "weather-query",
+  "version": "1.0.0",
+  "description": "A backend API that answers inverse weather questions, such as:",
+  "main": "ingest.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emsilver987/Spatiotemporal-Weather-Query-API.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/emsilver987/Spatiotemporal-Weather-Query-API/issues"
+  },
+  "homepage": "https://github.com/emsilver987/Spatiotemporal-Weather-Query-API#readme",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "node-fetch": "^3.3.2",
+    "pg": "^8.16.3"
+  }
+}
