@@ -1,6 +1,8 @@
 import "dotenv/config";
 import fetch from "node-fetch";
 import pkg from "pg";
+import cron from "node-cron";
+cron.schedule("*/5 * * * *", ingest);
 
 
 const { Pool } = pkg;
