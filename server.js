@@ -32,14 +32,19 @@ app.get("/cities", async (request, reply) => {
   const tempLt = temp_lt !== undefined ? Number(temp_lt) : null;
   const tempGt = temp_gt !== undefined ? Number(temp_gt) : null;
 
-  if ((tempLt !== null && Number.isNaN(tempLt)) || tempGt !== null && Numebr.isNaN(tempGt)){
-    return reply.code(400).send({ error: "Temperature must be a number"})
+  
+  if (
+    (tempLt !== null && Number.isNaN(tempLt)) ||
+    (tempGt !== null && Number.isNaN(tempGt))
+  ) {
+    return reply.code(400).send({ error: "Temperature must be a number" });
   }
+
 
   
   let tempConditions = [];
-  let params = [];
-  let paramIndex = 1;
+  let params = [minutes];
+  let paramIndex = 2;
 
   if (tempGt !== null){
     tempConditions.push(`w.temperature_f > $${paramIndex}`);
@@ -55,7 +60,8 @@ app.get("/cities", async (request, reply) => {
 
   const tempWhereClause = tempConditions.length > 0 ? `AND ${tempConditions.join(" AND ")}` : "";
 
-  const query = `
+
+const query = `
 SELECT
   c.name,
   c.state,
@@ -66,7 +72,7 @@ JOIN LATERAL (
   SELECT temperature_f, recorded_at
   FROM weather_snapshots
   WHERE city_id = c.id
-    AND recorded_at >= NOW() - INTERVAL '${minutes} minutes'
+    AND recorded_at >= NOW() - make_interval(mins => $1)
   ORDER BY recorded_at DESC
   LIMIT 1
 ) w ON true
