@@ -133,6 +133,11 @@ app.post("/snapshot", async(request,reply) => {
     return reply.code(400).send({error: "You must provide a city" })
   }
 
+  if (city === "all"){
+    processAllCities();
+    return reply.status(200).send({ message: "All Cities in Database up to date"});
+  }
+
   const { rows } = await pool.query(
     `
     SELECT id, lat, lon
@@ -172,7 +177,52 @@ app.post("/snapshot", async(request,reply) => {
 
 });
 
+async function processAllCities() {
+  const API_KEY = process.env.OPENWEATHER_API_KEY;
 
+  const { rows: cities } = await pool.query(`
+    SELECT id, name, lat, lon
+    FROM cities
+  `);
+
+  for (const city of cities) {
+    try {
+      const url =
+        `https://api.openweathermap.org/data/2.5/weather` +
+        `?lat=${city.lat}&lon=${city.lon}` +
+        `&units=imperial&appid=${API_KEY}`;
+
+      const res = await fetch(url);
+
+      if (!res.ok) {
+        throw new Error(`OpenWeather failed for ${city.name}`);
+      }
+
+      const data = await res.json();
+
+      const tempF = data.main.temp;
+           const wind = data.wind.speed;
+      const recordedAt = new Date(data.dt * 1000);
+
+      await pool.query(
+        `
+        INSERT INTO weather_snapshots (
+          city_id,
+          temperature_f,
+          wind_speed_mph,
+          recorded_at
+        )
+        VALUES ($1, $2, $3, $4)
+        `,
+        [city.id, tempF, wind, recordedAt]
+      );
+
+      console.log(`Inserted snapshot for ${city.name}`);
+    } catch (err) {
+      console.error(`Failed for ${city.name}:`, err.message);
+    }
+  }
+}
 
 app.listen({ port: 3000, host: "0.0.0.0" });
 
