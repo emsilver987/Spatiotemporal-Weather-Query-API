@@ -18,6 +18,10 @@ docker exec -i weather-postgres \
 Enter psql
 docker exec -it weather-postgres psql -U weather_user -d weather_db
 
+ALTER TABLE:
+ALTER TABLE <table name>;
+ADD COLUMN <column name> <type of var>;
+
 Core SQL query:
 SELECT
     c.name,

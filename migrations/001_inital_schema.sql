@@ -12,8 +12,7 @@ CREATE TABLE weather_snapshots (
     id SERIAL PRIMARY KEY,
     city_id INTEGER NOT NULL REFERENCES cities(id) ON DELETE CASCADE,
     temperature_f DOUBLE PRECISION NOT NULL,
-    recorded_at TIMESTAMPTZ NOT NULL,
-    wind DOUBLE PRECISION NOT NULL
+    recorded_at TIMESTAMPTZ NOT NULL
 );
 
 -- Index to support time-window queries

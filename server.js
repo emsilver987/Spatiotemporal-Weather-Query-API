@@ -82,6 +82,9 @@ ORDER BY w.temperature_f ASC;
 `;
 
   const result = await pool.query(query , params);
+  if (result.rows.length === 0){
+    console.log("No records found")
+  }
   return result.rows;
 });
 

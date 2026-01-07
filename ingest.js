@@ -38,8 +38,10 @@ async function ingest() {
 
     const res = await fetch(url);
     const data = await res.json();
+    // console.log(data);
 
     const tempF = data.main.temp;
+    const wind = data.wind.speed;
     const recordedAt = new Date(data.dt * 1000);
 
     const { rows } = await pool.query(
@@ -50,9 +52,9 @@ async function ingest() {
     const cityId = rows[0].id;
 
     await pool.query(
-      `INSERT INTO weather_snapshots (city_id, temperature_f, recorded_at)
-       VALUES ($1, $2, $3)`,
-      [cityId, tempF, recordedAt]
+      `INSERT INTO weather_snapshots (city_id, temperature_f, recorded_at, wind_speed_mph)
+       VALUES ($1, $2, $3, $4)`,
+      [cityId, tempF, recordedAt, wind]
     );
 
     console.log(`Inserted snapshot for ${city.name}`);
@@ -60,8 +62,13 @@ async function ingest() {
   
   const date = new Date()
   console.log(`Ingest finished at ${date.toISOString()}`);
-  await pool.end();
 }
+
+process.on('SIGTERM', async () => {
+  task.stop(); // Stop the cron first
+  await pool.end(); // Then close the pool
+  process.exit(0);
+});
 
 ingest().catch(console.error);
 
