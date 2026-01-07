@@ -8,12 +8,34 @@ Instead of querying weather by city, this service lets you query cities by weath
 
 ---
 
-Example Query:
+**Example Query:**
+```bash
 curl "http://localhost:3000/cities?temp_gt=20&temp_lt=70&as_of=10m"
+```
+
+**Response:**
+```json
 [
-{"name":"Whitestown","state":"IN","temperature_f":44.35,"recorded_at":"2026-01-07T02:31:47.000Z"},
-{"name":"Port St. Joe","state":"FL","temperature_f":61.99,"recorded_at":"2026-01-07T02:31:47.000Z"},
-{"name":"Dallas","state":"TX","temperature_f":65.79,"recorded_at":"2026-01-07T02:24:55.000Z"}]
+  {
+    "name": "Whitestown",
+    "state": "IN",
+    "temperature_f": 44.35,
+    "recorded_at": "2026-01-07T02:31:47.000Z"
+  },
+  {
+    "name": "Port St. Joe",
+    "state": "FL",
+    "temperature_f": 61.99,
+    "recorded_at": "2026-01-07T02:31:47.000Z"
+  },
+  {
+    "name": "Dallas",
+    "state": "TX",
+    "temperature_f": 65.79,
+    "recorded_at": "2026-01-07T02:24:55.000Z"
+  }
+]
+```
 ---
 
 ## What This Project Is
