@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "name": "weather-query",
   "version": "1.0.0",
   "description": "A backend API that answers inverse weather questions, such as:",
@@ -13,7 +14,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/emsilver987/Spatiotemporal-Weather-Query-API/issues"
   },

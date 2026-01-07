@@ -1,6 +1,7 @@
+import "dotenv/config";
 import fetch from "node-fetch";
 import pkg from "pg";
-import "dotenv/config";
+
 
 const { Pool } = pkg;
 
