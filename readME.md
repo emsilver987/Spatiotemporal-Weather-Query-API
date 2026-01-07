@@ -3,9 +3,16 @@
 A backend API that answers inverse weather questions, such as:
 
 **"Which cities are 20°F or colder right now?"**
+**"Which citites are 40°F or warmer right now?"**
+**"Which cities have wind speeds below 3 mph?"**
+**"Which citites have a temperature lower than 30°F and wind speeds higher than 4 mph"** 
 
 Instead of querying weather by city, this service lets you query cities by weather conditions, using pre-ingested, normalized weather data.
 
+## Endpoints:
+POST /snapshot?city=Indianapolis
+
+/cities?temp_gt=32&temp_lt=50&wind_gt=2&wind_lt=5&as_of=15m
 ---
 
 **Example Query:**
@@ -33,6 +40,17 @@ curl "http://localhost:3000/cities?wind_lt=5&temp_gt=63"
 ]
 
 ```
+
+**Example Query:**
+```base
+curl -X POST http://localhost:3000/snapshot -H "Content-Type: application/json" -d '{"city":"Atlanta"}'
+```
+
+**Response:***
+```json
+{"message":"Successfully added Atlanta to snapshot"}
+```
+
 ---
 
 ## What This Project Is
@@ -49,7 +67,7 @@ curl "http://localhost:3000/cities?wind_lt=5&temp_gt=63"
 ## Core Tools
 
 ### Node.js (API Server)
-- Exposes REST endpoints (e.g. `/cities`)
+- Exposes REST endpoints (e.g. `GET /cities`, `POST /snapshot`)
 - Validates query parameters
 - Translates requests into SQL queries
 - Returns JSON responses
@@ -65,7 +83,6 @@ curl "http://localhost:3000/cities?wind_lt=5&temp_gt=63"
 
 ### Weather Data API (Upstream Source)
 Examples:
-- NOAA
 - OpenWeather
 
 - Provides raw temperature data with timestamps
@@ -109,7 +126,7 @@ Services:
 
 ### Request Flow
 
-1. The ingestion worker periodically fetches weather data.
+1. The ingestion worker periodically fetches weather data. (user can also get real time data by sending a post request to snapshots containing city name)
 2. Data is normalized and stored as time-stamped snapshots.
 3. A client sends a query like:
    ```
@@ -124,7 +141,7 @@ Services:
 
 **"Right now"** is defined as:
 - The most recent weather snapshot within a configurable freshness window.
-- **Default:** 10 minutes
+- **Default:** 60 minutes
 
 Clients may override this:
 ```
@@ -132,15 +149,6 @@ Clients may override this:
 ```
 
 If no recent snapshot exists for a city, it is excluded.
-
----
-
-## Example Queries
-
-- Cities currently at or below 20°F
-- Cities that crossed freezing in the last hour
-- Cities with the largest temperature drop in 6 hours
-- Historical temperature trends for a city
 
 ---
 
@@ -183,5 +191,6 @@ Most weather APIs answer:
 
 This project answers:  
 **"Which cities match Weather Condition Y?"**
+- can include thresholds and matching many different conditions
 
 That inversion enables more interesting, non-trivial backend queries and demonstrates real system design skills.

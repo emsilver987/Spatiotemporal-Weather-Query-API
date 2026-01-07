@@ -122,6 +122,56 @@ ORDER BY w.temperature_f ASC;
 });
 
 
+////////////////////////////////
+// POST /snapshot?city=Indianapolis
+////////////////////////////////
+
+app.post("/snapshot", async(request,reply) => {
+  const { city } = request.body
+
+  if (!city) {
+    return reply.code(400).send({error: "You must provide a city" })
+  }
+
+  const { rows } = await pool.query(
+    `
+    SELECT id, lat, lon
+    FROM cities
+    WHERE name = $1
+    `,
+    [city]
+  );  
+
+  if (rows.length === 0){
+    return reply.code(404).send({ error: "City not Found"});
+  }
+  
+  const {id: cityId, lat, lon}  = rows[0]
+  const API_KEY = process.env.OPENWEATHER_API_KEY;
+  const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=imperial&appid=${API_KEY}`;
+
+  const res = await fetch(url);
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch weather data");
+  }
+
+  const data = await res.json();
+  
+  const tempF = data.main.temp;
+  const wind = data.wind.speed;
+  const recordedAt = new Date(data.dt * 1000);
+
+  await pool.query(
+    `INSERT INTO weather_snapshots (city_id, temperature_f, recorded_at, wind_speed_mph)
+    VALUES ($1, $2, $3, $4)`,
+    [cityId, tempF, recordedAt, wind]
+  );
+
+  return reply.status(200).send({ message: `Successfully added ${city} to snapshot`});
+
+});
+
 
 
 app.listen({ port: 3000, host: "0.0.0.0" });
