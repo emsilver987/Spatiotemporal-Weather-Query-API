@@ -249,13 +249,12 @@ app.get("/health", async (request, reply) => {
 // GET /cities/forecast
 /////////////// focuses on conditions (where will it be below 32 degrees in 12 hours), which citites will be windy tmrw, etc,.
 app.get("/cities/forecast", async (request, reply) => {
-  const API_KEY = process.env.OPENWEATHER_API_KEY
   const { temp_lt, temp_gt, wind_lt, wind_gt, in: offset ="6h" } = request.query;
    
   // parse future like "1h"
-  const hours = parseInt(as_of.replace("h", ""), 10);
+  const hours = parseInt(offset.replace("h", ""), 10);
   if (isNaN(hours)) {
-    return reply.code(400).send({ error: "invalid as_of format" });
+    return reply.code(400).send({ error: "invalid in format" });
   }
   
   const tempLt = temp_lt !== undefined ? Number(temp_lt) : null;
@@ -286,29 +285,29 @@ app.get("/cities/forecast", async (request, reply) => {
   processForecasts()
 
   let conditions = [];
-  let params = [minutes];
+  let params = [hours];
   let paramIndex = 2;
 
   if (tempGt !== null){
-    conditions.push(`w.temperature_f > $${paramIndex}`);
+    conditions.push(`f.temperature_f > $${paramIndex}`);
     params.push(tempGt);
     paramIndex++;
   }
 
   if (tempLt !== null){
-    conditions.push(`w.temperature_f < $${paramIndex}`);
+    conditions.push(`f.temperature_f < $${paramIndex}`);
     params.push(tempLt);
     paramIndex++;
   }  
 
   if (windGt !== null){
-    conditions.push(`w.wind_speed_mph > $${paramIndex}`);
+    conditions.push(`f.wind_speed_mph > $${paramIndex}`);
     params.push(windGt);
     paramIndex++;
   }  
 
   if (windLt !== null){
-    conditions.push(`w.wind_speed_mph < $${paramIndex}`);
+    conditions.push(`f.wind_speed_mph < $${paramIndex}`);
     params.push(windLt);
     paramIndex++;
   }
@@ -353,6 +352,7 @@ ORDER BY f.temperature_f ASC;
 });
 
 async function processForecasts() {
+  const API_KEY = process.env.OPENWEATHER_API_KEY
   const { rows: cities } = await pool.query(`
     SELECT id, name, lat, lon
     FROM cities
