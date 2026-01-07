@@ -20,6 +20,7 @@
   "homepage": "https://github.com/emsilver987/Spatiotemporal-Weather-Query-API#readme",
   "dependencies": {
     "dotenv": "^17.2.3",
+    "fastify": "^5.6.2",
     "node-fetch": "^3.3.2",
     "pg": "^8.16.3"
   }
