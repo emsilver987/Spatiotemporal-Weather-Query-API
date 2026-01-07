@@ -224,5 +224,23 @@ async function processAllCities() {
   }
 }
 
+app.get("/health", async (request, reply) => {
+  try {
+    await pool.query("SELECT 1");
+
+    return {
+      status: "ok",
+      service: "weather-query-api",
+      timestamp: new Date().toISOString()
+    };
+  } catch (err) {
+    reply.code(500);
+    return {
+      status: "error",
+      error: "database_unreachable"
+    };
+  }
+});
+
 app.listen({ port: 3000, host: "0.0.0.0" });
 
