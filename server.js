@@ -4,7 +4,12 @@ import pkg from "pg";
 
 const { Pool } = pkg;
 
-const app = Fastify({ logger: true });
+const app = Fastify({ 
+  logger: true,
+  json: {
+    space: 2
+  }
+});
 
 const pool = new Pool({
   host: "localhost",
@@ -19,46 +24,73 @@ const pool = new Pool({
 // GET /cities?temp_gt=80
 // GET /cities?temp_gt=32&temp_lt=50
 // GET /cities?temp_gt=32&temp_lt=50&as_of=15m
+// GET /cities?wind_ltt=5
+// GET /ciites?wind_gt=2&temp_lt=50
 ////////////////////////////////
 app.get("/cities", async (request, reply) => {
-  const { temp_lt, temp_gt, as_of = "10m" } = request.query;
+  const { temp_lt, temp_gt, wind_lt, wind_gt, as_of = "60m" } = request.query;
+  
 
-  // parse as_of like "10m"
+  //   parse as_of like "60m"
   const minutes = parseInt(as_of.replace("m", ""), 10);
   if (isNaN(minutes)) {
     return reply.code(400).send({ error: "invalid as_of format" });
   }
-
+  
   const tempLt = temp_lt !== undefined ? Number(temp_lt) : null;
   const tempGt = temp_gt !== undefined ? Number(temp_gt) : null;
+  const windLt = wind_lt !== undefined ? Number(wind_lt) : null;
+  const windGt = wind_gt !== undefined ? Number(wind_gt) : null;
 
-  
   if (
-    (tempLt !== null && Number.isNaN(tempLt)) ||
-    (tempGt !== null && Number.isNaN(tempGt))
+  tempLt === null &&
+  tempGt === null &&
+  windLt === null &&
+  windGt === null
   ) {
-    return reply.code(400).send({ error: "Temperature must be a number" });
+  return reply.code(400).send({
+    error: "At least one weather filter is required"
+  });
   }
 
+  if (
+    (tempLt !== null && Number.isNaN(tempLt)) ||
+    (tempGt !== null && Number.isNaN(tempGt)) ||
+    (windLt !== null && Number.isNaN(windLt)) ||
+    (windGt !== null && Number.isNaN(windGt)) 
+  ) {
+    return reply.code(400).send({ error: "Weather filters must be numeric" });
+  }
 
-  
-  let tempConditions = [];
+  let conditions = [];
   let params = [minutes];
   let paramIndex = 2;
 
   if (tempGt !== null){
-    tempConditions.push(`w.temperature_f > $${paramIndex}`);
+    conditions.push(`w.temperature_f > $${paramIndex}`);
     params.push(tempGt);
     paramIndex++;
   }
 
   if (tempLt !== null){
-    tempConditions.push(`w.temperature_f < $${paramIndex}`);
+    conditions.push(`w.temperature_f < $${paramIndex}`);
     params.push(tempLt);
     paramIndex++;
   }  
 
-  const tempWhereClause = tempConditions.length > 0 ? `AND ${tempConditions.join(" AND ")}` : "";
+  if (windGt !== null){
+    conditions.push(`w.wind_speed_mph > $${paramIndex}`);
+    params.push(windGt);
+    paramIndex++;
+  }  
+
+  if (windLt !== null){
+    conditions.push(`w.wind_speed_mph < $${paramIndex}`);
+    params.push(windLt);
+    paramIndex++;
+  }
+
+  const whereClause = conditions.length > 0 ? `AND ${conditions.join(" AND ")}` : "";
 
 
 const query = `
@@ -66,10 +98,11 @@ SELECT
   c.name,
   c.state,
   w.temperature_f,
+  w.wind_speed_mph,
   w.recorded_at
 FROM cities c
 JOIN LATERAL (
-  SELECT temperature_f, recorded_at
+  SELECT temperature_f, wind_speed_mph, recorded_at
   FROM weather_snapshots
   WHERE city_id = c.id
     AND recorded_at >= NOW() - make_interval(mins => $1)
@@ -77,7 +110,7 @@ JOIN LATERAL (
   LIMIT 1
 ) w ON true
 WHERE 1=1
-${tempWhereClause}
+${whereClause}
 ORDER BY w.temperature_f ASC;
 `;
 
@@ -87,6 +120,7 @@ ORDER BY w.temperature_f ASC;
   }
   return result.rows;
 });
+
 
 
 
