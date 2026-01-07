@@ -57,7 +57,9 @@ async function ingest() {
 
     console.log(`Inserted snapshot for ${city.name}`);
   }
-
+  
+  const date = new Date()
+  console.log(`Ingest finished at ${date.toISOString()}`);
   await pool.end();
 }
 
